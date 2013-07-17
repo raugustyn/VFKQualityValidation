@@ -1,13 +1,13 @@
 # -*- coding: cp1250 -*-
 #-------------------------------------------------------------------------------
-# Name:        module1
-# Purpose:
+# Name:        VFKValidation
+# Purpose:     Hlavní bussiness logic validace
 #
-# Author:      Augustyn
+# Author:      Radek Augustýn
 #
 # Created:     16.07.2013
 # Copyright:   (c) Augustyn 2013
-# Licence:     <your licence>
+# Licence:     VÚGTK, v.v.i
 #-------------------------------------------------------------------------------
 import Validation, VFKQualityDictionary
 
@@ -26,7 +26,7 @@ def main():
     f = open("list.html", "w")
     f.write(s)
     f.close()
-    print s
+    print "Soubor list.html je vytvořen."
     pass
 
 if __name__ == '__main__':

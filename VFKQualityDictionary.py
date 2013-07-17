@@ -1,13 +1,13 @@
 # -*- coding: cp1250 -*-
 #-------------------------------------------------------------------------------
-# Name:        module1
-# Purpose:
+# Name:        VFKQualityDictionary
+# Purpose:     Slovníky pro definici jednotlivých kontrol
 #
-# Author:      Augustyn
+# Author:      Radek Augustýn
 #
 # Created:     16.07.2013
 # Copyright:   (c) Augustyn 2013
-# Licence:     <your licence>
+# Licence:     VÚGTK, v.v.i
 #-------------------------------------------------------------------------------
 from Validation import *
 
