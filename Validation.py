@@ -14,6 +14,17 @@ class VFKValidation:
     """
     Abstraktní tøída definující kontrolu
     """
+    def __init__(self, validationNumber, name, description, userMessage, useType, measureText, validationRequired):
+        """ Uložení parametrù """
+        self.validationNumber = validationNumber
+        self.useType = useType
+        self.validationRequired = validationRequired
+
+        self.name = name
+        self.description = description
+        self.userMessage = userMessage
+        self.measureText = measureText
+        pass
 
     def testHeader(self, header):
         pass
@@ -21,22 +32,38 @@ class VFKValidation:
     def testData(self, data):
         pass
 
-    def getMeasureText(self):
-        """ Vrací text "Míra shody" do tabulky reportù, viz metodika, kap 7.1  """
-        return "undefined"
-
-    def getUserMessage(self):
-        """ Vrací text "Hlášení pro uživatele" do tabulky reportù, viz metodika, kap 7.1  """
-        return "undefined"
-
     def getName(self):
         """ Vrací text "Název" do tabulky reportù, viz metodika, kap 7.1  """
-        return "undefined"
+        return self.name
 
     def getDescription(self):
         """ Vrací text "Popis kontroly" do tabulky reportù, viz metodika, kap 7.1  """
-        return "undefined"
+        return self.description
 
+    def getUserMessage(self):
+        """ Vrací text "Hlášení pro uživatele" do tabulky reportù, viz metodika, kap 7.1  """
+        return self.userMessage
+
+    def getMeasureText(self):
+        """ Vrací text "Míra shody" do tabulky reportù, viz metodika, kap 7.1  """
+        return self.measureText
+
+    def tableRow(self, name, value):
+        """ Vrací formátovaný øádek výstupní tabulky """
+        return "<tr><td>" + name + "</td><td>" + value + "</td></tr>\n"
+
+    def toHTML(self):
+        """ Konvertuje hodnoty do fornátu HTML """
+        s = "<table>\n"
+        s = s + self.tableRow("Oznaèení kontroly", self.validationNumber)
+        s = s + self.tableRow("Název", self.getName())
+        s = s + self.tableRow("Popis kontroly", self.getDescription())
+        s = s + self.tableRow("Hlášení pro uživatele", self.getUserMessage())
+        s = s + self.tableRow("Typ chyby", str(self.useType))
+        s = s + self.tableRow("Míra shody", self.getMeasureText())
+        s = s + self.tableRow("Povinnost kontroly", str(self.validationRequired))
+        s = s + "</table>\n"
+        return s
 
 class ErrorType:
     """ Èíselník "Typu chyby", viz metodika, kap 7.1 """
@@ -54,10 +81,10 @@ class UseType:
         pass
 
     def __repr__(self):
-        return "MGEO - " + ErrorType.ERROR_TYPE_CAPTIONS[self.MGEO] + \
+        return "MGEO - "  + ErrorType.ERROR_TYPE_CAPTIONS[self.MGEO] + \
                " ISKN - " + ErrorType.ERROR_TYPE_CAPTIONS[self.ISKN] + \
-               " GP - " + ErrorType.ERROR_TYPE_CAPTIONS[self.GP] + \
-               " NN - " + ErrorType.ERROR_TYPE_CAPTIONS[self.NN]
+               " GP - "   + ErrorType.ERROR_TYPE_CAPTIONS[self.GP] + \
+               " NN - "   + ErrorType.ERROR_TYPE_CAPTIONS[self.NN]
 
 class ValidationRequired(UseType):
     def __repr__(self):
@@ -69,25 +96,15 @@ class FieldTypeCheck(VFKValidation):
 
     def __init__(self, validationNumber, fieldCaption, fieldName, fieldDef, useType, validationRequired):
         """ Uložení parametrù """
-        self.validationNumber = validationNumber
+        VFKValidation.__init__(self, validationNumber, None, None, None, useType, "Kvalita dat urèena v % jako: (0, pro poèet chybných prvkù >= 1;1) *100.", validationRequired)
         self.fieldCaption = fieldCaption
         self.fieldName = fieldName
         self.fieldName = fieldName
         self.fieldDef = fieldDef
-        self.useType = useType
-        self.validationRequired = validationRequired
         pass
 
     def testData(self, data):
         pass
-
-    def tableRow(self, name, value):
-        """ Vrací formátovaný øádek výstupní tabulky """
-        return "<tr><td>" + name + "</td><td>" + value + "</td></tr>\n"
-
-    def getMeasureText(self):
-        """ Vrací text "Míra shody" do tabulky reportù, viz metodika, kap 7.1  """
-        return "Kvalita dat urèena v % jako: (0, pro poèet chybných prvkù >= 1;1) *100."
 
     def getUserMessage(self):
         """ Vrací text "Hlášení pro uživatele" do tabulky reportù, viz metodika, kap 7.1  """
@@ -101,15 +118,17 @@ class FieldTypeCheck(VFKValidation):
         """ Vrací text "Popis kontroly" do tabulky reportù, viz metodika, kap 7.1  """
         return 'Prvky domény "' + self.fieldCaption + '" (' + ", ".join(self.fieldName) + ')'
 
-    def toHTML(self):
-        """ Konvertuje hodnoty do fornátu HTML """
-        s = "<table>\n"
-        s = s + self.tableRow("Oznaèení kontroly", self.validationNumber)
-        s = s + self.tableRow("Název", self.getName())
-        s = s + self.tableRow("Popis kontroly", self.getDescription())
-        s = s + self.tableRow("Hlášení pro uživatele", self.getUserMessage())
-        s = s + self.tableRow("Typ chyby", str(self.useType))
-        s = s + self.tableRow("Míra shody", self.getMeasureText())
-        s = s + self.tableRow("Povinnost kontroly", str(self.validationRequired))
-        s = s + "</table>\n"
-        return s
+
+class JustOneRowCheck(VFKValidation):
+    """ Tøída implemntující kontrolu typu sloupce a hodnot v nìm uložených
+    """
+    def __init__(self, validationNumber, name, description, userMessage, useType, validationRequired, id):
+        """ Uložení parametrù """
+        VFKValidation.__init__(
+            self, validationNumber, name, description, userMessage, useType,
+            "Kvalita dat urèena v % jako: (1 – (podíl poètu chybìjících nebo chybných údajù k požadovanému poètu))*100. Požadovaný poèet je v tomto pøípadì 1.",
+            validationRequired
+        )
+        self.id = id
+        pass
+
