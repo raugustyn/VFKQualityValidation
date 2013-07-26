@@ -10,7 +10,7 @@
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
 
-import vfk, vfk_4_4
+import vfk
 from EuradinImport import configRUIAN, textFile_DBHandler, postGIS_DBHandler
 
 ##class _VFKReaderHandler:
@@ -25,7 +25,7 @@ def VFKReader(fileName, aFieldSeparator = ";"):
     #if versionLine.find("&HVERZE;") == 0:
     #    versionString = versionLine.split('"')[1]  # &HVERZE;"4.4"
         #if versionString == "4.4":
-    return vfk_4_4.VFKReader(f, aFieldSeparator)
+    return vfk.VFKReader(f, aFieldSeparator)
 
     return None
 

@@ -130,6 +130,8 @@ class VFKReader:
     SOBR_ID_NAME   = 'ID'
     SOBR_X_NAME    = 'SOURADNICE_X'
     SOBR_Y_NAME    = 'SOURADNICE_Y'
+    LINE_CONNECTOR = "¤".decode('iso-8859-2')
+
 
     """ Abstraktní tøída reprezentující parser VFK souboru. """
     def __init__(self, aFileHandler, aFieldSeparator = ";"):
@@ -138,6 +140,7 @@ class VFKReader:
         self._tableDefs = None
         self.readFileHeader()
         self.__geometryTablesRead = False
+        self.recordNumber = 0
 
         self._lastFieldCountTableName = None
         self._lastFieldCount = None
@@ -150,11 +153,71 @@ class VFKReader:
 
     tableDefs = property(getTableDefs)
 
+    def readFileHeader(self):
+        self.fileHandler.seek(0)
+        onStartFile(self)
+        while True:
+            lineStr = self.readLine()
+            if lineStr[:2] <> "&H":
+                break
+
+        # @TODO Zbytecne se nacte dalsi radek
+        pass
+
     def read(self):
-        return [RowType.Error]
+        """ Ète øádek ze vstupního souboru a rozdìlí ho na záznamy. Kontroluje,
+            jestli se jedná o data nebo hlavièku dat. Jestliže je poèet záznamù
+            dat neúplný, naète další rádek.
+        """
+        line = self.readLine()
+        if line.find(VFKReader.LINE_CONNECTOR) <> -1:
+            pass
+        while line[len(line)-1:] == VFKReader.LINE_CONNECTOR:
+            line = line[:len(line) - 1] + self.readLine()
+
+        lineType = self.getRowType(line)
+        line = line.replace("\n", "")
+
+        if lineType == RowType.Header:
+            result = line.split(self.fieldSeparator)
+            result[0] = result[0][2:]
+            return [lineType, result]
+        if lineType in [RowType.Data, RowType.Block]:
+            result = line.split(self.fieldSeparator)
+            result[0] = result[0][2:]
+            return [lineType, result]
+        else:
+            return [lineType]
 
     def _searchForTablesDefs(self):
-        """ Projde celý soubor a urèí definice jednotlivých tabulek. """
+        self.readFileHeader()
+        print "Reading records"
+        self.tableDefs = {}
+        sections = []
+        fieldTypes = []
+        sectionName = None
+        while True:
+            line = self.readLine()
+            lineType = self.getRowType(line)
+
+            if lineType == RowType.Eof:
+                break
+            elif lineType == RowType.Block:
+                record = line.split(self.fieldSeparator)
+                recordSectionName = record[0].lower()
+
+                sectionName = recordSectionName[2:]
+                sections.append(sectionName)
+                self.tableDefs[sectionName] = []
+                for fieldDef in record:
+                    s = fieldDef.split(" ")
+                    if len(s) == 2:
+                        self.tableDefs[sectionName].append(FieldDef(s[0], s[1]))
+                print "--- ", sectionName
+            pass
+
+        #print sections
+        print "Field Types:", fieldTypes
         pass
 
     def readFileHeader(self):

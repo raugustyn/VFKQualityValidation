@@ -50,7 +50,7 @@ class VFKValidation:
 
     def tableRow(self, name, value):
         """ Vrací formátovaný øádek výstupní tabulky """
-        return "<tr><td>" + name + "</td><td>" + value + "</td></tr>\n"
+        return "<tr><th>" + name + "</th><td>" + value + "</td></tr>\n"
 
     def toHTML(self):
         """ Konvertuje hodnoty do fornátu HTML """
