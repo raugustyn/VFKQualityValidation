@@ -134,9 +134,9 @@ class VFKReader:
 
 
     """ Abstraktní tøída reprezentující parser VFK souboru. """
-    def __init__(self, aFileHandler, aFieldSeparator = ";"):
+    def __init__(self, aFileName, aFieldSeparator = ";"):
+        self.fileHandler = open(aFileName, "r")
         self.fieldSeparator = aFieldSeparator
-        self.fileHandler = aFileHandler
         self._tableDefs = None
         self.readFileHeader()
         self.__geometryTablesRead = False
@@ -457,3 +457,30 @@ class VFKReader:
             print "sobrTable:", len(self.sobrTable)
             print self.coordFromHPID("3876520211")
         pass
+
+from EuradinImport import configRUIAN, textFile_DBHandler, postGIS_DBHandler
+from Testing.referencedatabase import *
+
+def main():
+    reader = VFKReader(SAMPLE_DATA[2]) # 5
+
+    writeToDB = False
+    if not writeToDB:
+        handler = textFile_DBHandler.Handler("..\\FileDB\\", ";")
+    else:
+        #handler = postGIS_DBHandler.Handler("dbname=VFKImport host=localhost port=5432 user=postgres password=ahoj","public")
+        handler = postGIS_DBHandler.Handler("dbname=VFKImport host=localhost port=5432 user=postgres password=ahoj","public")
+
+    print reader.tableDefs
+    print "---- Table Names ----"
+    print reader.getTableNames()
+    print "Field types:", reader.getFieldTypes()
+    print "Spatial tables:", reader.getSpatialTables()
+
+    reader.readGeometryTables()
+    reader.createVFKDatabase(handler)
+    reader.importVFKDatabase(handler)
+
+
+if __name__ == '__main__':
+    main()

@@ -79,23 +79,14 @@ class VFKValidator:
         """
         pass
 
-SAMPLE_DATA = [
- "..\\SampleData\\krasice_4_3.vfk",
- "..\\SampleData\\Jinocany_anonym.vfk",
- "..\\SampleData\\Zemek\\Od_Podhurska_04_04_2013\\brozankyPodh.vfk",
- "..\\SampleData\\Zemek\\Od_Podhurska_04_04_2013\\melnikPodh.vfk",
- "..\\SampleData\\Zemek\\Od_Doubek_12_2012\\File1.vfk",
- "..\\SampleData\\Zemek\\Od_Doubek_12_2012\\File2.vfk",
- "..\\SampleData\\Zemek\\Od_Doubek_12_2012\\File3.vfk",
- "..\\SampleData\\Zemek\\Od_Doubek_12_2012\\File4.vfk"
-]
+from Testing.referencedatabase import *
 
-import VFKReader
-import QualityCheck.VFKQualityDictionary
+import vfk
+import VFKQualityDictionary
 
 def main():
-    reader = VFKReader.VFKReader(SAMPLE_DATA[2]) # 5
-    validator = VFKValidator(None, QualityCheck.VFKQualityDictionary.validationDictionary)
+    reader = vfk.VFKReader(SAMPLE_DATA[2]) # 5
+    validator = VFKValidator(None, VFKQualityDictionary.validationDictionary)
     validator.validateFile(reader)
 
 

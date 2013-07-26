@@ -131,4 +131,3 @@ class JustOneRowCheck(VFKValidation):
         )
         self.id = id
         pass
-

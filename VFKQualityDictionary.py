@@ -438,4 +438,3 @@ validationDictionary = {
     "8. Kontext zmìny": []
 
 }
-
