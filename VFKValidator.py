@@ -25,10 +25,31 @@ class VFKValidator:
         self.VFKType = VFKType
         self.validationDictionary = validationDictionary
 
+        self.checkRowStringList = []
+        self.validateTableHeaderList = []
+        self.validateDataRowList = []
+
+        for groupName in validationDictionary:
+            group = validationDictionary[groupName]
+            for checkItem in group:
+                if "checkRowString" in dir(checkItem):
+                    self.checkRowStringList.append(checkItem)
+
+                if "validateTableHeader" in dir(checkItem):
+                    self.validateTableHeaderList.append(checkItem)
+
+                if "validateDataRow" in dir(checkItem):
+                    self.validateDataRowList.append(checkItem)
+
+                pass
+        pass
+
     def validateFile(self, reader):
         reader.rewindToStart()
+        rowNumber = 0
         while True:
             recordData = reader.read()
+            rowNumber = rowNumber + 1
             lineType = recordData[0]
 
             if lineType == RowType.Eof:
@@ -39,13 +60,18 @@ class VFKValidator:
                 pass
             elif lineType == RowType.Block:
                 data = recordData[1]
-                self.validateTableHeader(data[0].lower(), data[1:])
+                self.validateTableHeader(rowNumber, data[0].lower(), data[1:])
                 print data[0].lower()
                 pass
             elif lineType == RowType.Data:
                 data = recordData[1]
-                self.validateTableRow(data[0].lower(), data[1:])
+                self.validateDataRow(rowNumber, data[0].lower(), data[1:])
                 pass
+        pass
+
+    def checkRowString(self, rowNumber, rowContent):
+        for validateItem in self.checkRowStringList:
+            validateItem.checkRowString(rowNumber, rowContent)
         pass
 
     def validateHeaderRow(self, identifier, value):
@@ -59,7 +85,7 @@ class VFKValidator:
         """
         pass
 
-    def validateTableHeader(self, tableName, fieldDefs):
+    def validateTableHeader(self, rowNumber, tableName, fieldDefs):
         """ Volá nad hlavièkou tabulky všechny relevantní kontrolní funkce.
         napøíklad: &BSOBR;ID N30;STAV_DAT N2;KATUZE_KOD N6;CISLO_ZPMZ N5;CISLO_TL N4;CISLO_BODU N12;UPLNE_CISLO N12;SOURADNICE_Y N10.2;SOURADNICE_X N10.2;KODCHB_KOD N2
 
@@ -67,9 +93,11 @@ class VFKValidator:
             tableName {String} Identifikátor záznamu hlavièky, napø. SOBR
             fieldDefs {Array of vfk.FieldDef} Definice položek tabulky, napø. [ID Number(30), STAV_DAT Number(2), ...]
         """
+        for validateItem in self.validateTableHeaderList:
+            validateItem.validateTableHeader(rowNumber, tableName, fieldDefs)
         pass
 
-    def validateTableRow(self, tableName, fieldValues):
+    def validateDataRow(self, rowNumber, tableName, fieldValues):
         """ Volá nad øádkem tabulky všechny relevantní kontrolní funkce.
         napøíklad: &DSOBR;2765745709;0;733491;1;;32;1000010032;560257.84;1134738.66;
 
@@ -77,6 +105,8 @@ class VFKValidator:
             tableName {String} Identifikátor záznamu hlavièky, napø. SOBR
             fieldValues {Array of String} Hodnoty záznamu tabulky, napø. ["2765745709","0","733491","1","","32","1000010032","560257.84","1134738.66"]
         """
+        for validateItem in self.validateDataRowList:
+            validateItem.validateDataRow(rowNumber, tableName, fieldValues)
         pass
 
 from Testing.referencedatabase import *
@@ -85,7 +115,7 @@ import vfk
 import VFKQualityDictionary
 
 def main():
-    reader = vfk.VFKReader(SAMPLE_DATA[2]) # 5
+    reader = vfk.VFKReader(SAMPLE_DATA[0]) # 5
     validator = VFKValidator(None, VFKQualityDictionary.validationDictionary)
     validator.validateFile(reader)
 

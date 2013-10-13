@@ -13,6 +13,12 @@
 class VFKValidation:
     """
     Abstraktní tøída definující kontrolu
+
+    Události pro kontrolu v souboru VFK:
+    def checkRow(self, rowNumber, rowContent)
+    def validateHeaderRow(self, rowNumber, itemName, itemValue)
+    def validateTableHeader(self, rowNumber, tableName, fieldDefs)
+    def validateDataRow(self, rowNumber, tableName, values)
     """
     def __init__(self, validationNumber, name, description, userMessage, useType, measureText, validationRequired):
         """ Uložení parametrù """
@@ -50,7 +56,7 @@ class VFKValidation:
 
     def tableRow(self, name, value):
         """ Vrací formátovaný øádek výstupní tabulky """
-        return "<tr><th>" + name + "</th><td>" + value + "</td></tr>\n"
+        return "<tr><th>" + name + "</th><td>" + str(value) + "</td></tr>\n"
 
     def toHTML(self):
         """ Konvertuje hodnoty do fornátu HTML """
@@ -69,11 +75,13 @@ class ErrorType:
     """ Èíselník "Typu chyby", viz metodika, kap 7.1 """
     Fatal    = 0
     Critical = 1
-    ERROR_TYPE_CAPTIONS = ["fatální", "kritická"]
+    Undefined = 2
+    ERROR_TYPE_CAPTIONS = ["fatální", "kritická", "nedefinováno"]
 
 class UseType:
     """ Záznam pro uložení stejných hodnot pro MGEO, ISKN, GP a NN """
-    def __init__(self, MGEO, ISKN, GP, NN):
+    def __init__(self, MGEO, ISKN, GP, NN, VFK = ErrorType.Undefined):
+        self.VFK = VFK
         self.MGEO = MGEO
         self.ISKN = ISKN
         self.GP = GP
@@ -84,7 +92,8 @@ class UseType:
         return "MGEO - "  + ErrorType.ERROR_TYPE_CAPTIONS[self.MGEO] + \
                " ISKN - " + ErrorType.ERROR_TYPE_CAPTIONS[self.ISKN] + \
                " GP - "   + ErrorType.ERROR_TYPE_CAPTIONS[self.GP] + \
-               " NN - "   + ErrorType.ERROR_TYPE_CAPTIONS[self.NN]
+               " NN - "   + ErrorType.ERROR_TYPE_CAPTIONS[self.NN] + \
+               " VFK - "   + ErrorType.ERROR_TYPE_CAPTIONS[self.VFK]
 
 class ValidationRequired(UseType):
     def __repr__(self):
@@ -99,8 +108,22 @@ class FieldTypeCheck(VFKValidation):
         VFKValidation.__init__(self, validationNumber, None, None, None, useType, "Kvalita dat urèena v % jako: (0, pro poèet chybných prvkù >= 1;1) *100.", validationRequired)
         self.fieldCaption = fieldCaption
         self.fieldName = fieldName
-        self.fieldName = fieldName
         self.fieldDef = fieldDef
+        self.VFKFieldPattern = None
+
+        if self.fieldDef.find("(") == -1:
+            self.fieldType = self.fieldDef
+            self.fieldParams = ""
+        else:
+            self.fieldType = self.fieldDef[:self.fieldDef.find("(")]
+            self.fieldParams =  self.fieldDef[self.fieldDef.find("(") + 1:]
+
+        if self.fieldType == "NUMBER":
+            self.VFKFieldPattern = "N" + self.fieldParams[:self.fieldParams.find(")")]
+            if self.VFKFieldPattern.find(".0") >= 0:
+                self.VFKFieldPattern = self.VFKFieldPattern[:len(self.VFKFieldPattern) - 2]
+
+
         pass
 
     def testData(self, data):
@@ -118,6 +141,40 @@ class FieldTypeCheck(VFKValidation):
         """ Vrací text "Popis kontroly" do tabulky reportù, viz metodika, kap 7.1  """
         return 'Prvky domény "' + self.fieldCaption + '" (' + ", ".join(self.fieldName) + ')'
 
+    def validateTableHeader(self, rowNumber, tableName, fieldDefs):
+        if self.VFKFieldPattern <> None:
+            for fieldDef in fieldDefs:
+                fieldName = fieldDef[:fieldDef.find(" ")]
+                fieldParams = fieldDef[fieldDef.find(" ") + 1:]
+                if fieldName in self.fieldName:
+                    if self.VFKFieldPattern <> fieldParams:
+                        print "field def for", fieldName, self.VFKFieldPattern, "<>", fieldParams
+                    else:
+                        pass
+        pass
+
+
+
+class VFKRowCheck_TypeID(VFKValidation):
+    def __init__(self, validationNumber):
+        """ Uložení parametrù """
+        VFKValidation.__init__(self,
+            validationNumber,
+            "Základní kontrola",
+            "Kontrola jestli øádky souboru zaèínají povolenými sekvencemi",
+            "Soubor VFK musí zaèínat znaky &H, &D, &B, &K",
+            UseType(ErrorType.Undefined, ErrorType.Undefined, ErrorType.Undefined, ErrorType.Undefined, ErrorType.Fatal),
+            "Kvalita dat urèena v % jako: (0, pro poèet chybných prvkù >= 1;1) *100.", None)
+        pass
+
+    def checkRowString(self, rowNumber, rowContent):
+        """ Zkontroluje, jestli jsou hodnoty &H, &D, &B, &K """
+        allowedValues = "&H", "&D", "&B", "&K"
+        if rowContent in [allowedValues]:
+            return ""
+        else:
+            return "Øádek nezaèíná " + allowedValues + " " + rowNumber + ":" + rowContent
+        pass
 
 class JustOneRowCheck(VFKValidation):
     """ Tøída implemntující kontrolu typu sloupce a hodnot v nìm uložených
@@ -130,4 +187,18 @@ class JustOneRowCheck(VFKValidation):
             validationRequired
         )
         self.id = id
+        pass
+
+
+class FilledFieldsCheck(VFKValidation):
+    def __init__(self, validationNumber, name, description, userMessage, useType, validationRequired):
+        """ Uložení parametrù """
+        VFKValidation.__init__(
+            self, validationNumber, name, description, userMessage, useType,
+            "U listù vlastnictví musí být povinnì vyplnìn sloupec ID a šestimístný kód katastrálního území ",
+            validationRequired
+        )
+        pass
+
+    def validateDataRow(self, rowNumber, tableName, values):
         pass

@@ -12,6 +12,9 @@
 from Validation import *
 
 validationDictionary = {
+    "0. VFK File Format": [
+        VFKRowCheck_TypeID("0.1")
+    ],
     "1. Struktura dat": [
         FieldTypeCheck(
             "1.2",
@@ -179,7 +182,7 @@ validationDictionary = {
             "1.20",
             "D-NZ TYPE",
             ["NZ_TYPE"],
-            "NUMBER(10)",
+            "VARCHAR(10)",
             UseType(ErrorType.Fatal, ErrorType.Fatal, ErrorType.Fatal, ErrorType.Fatal),
             ValidationRequired(True, True, True, True)
         ),
@@ -305,7 +308,7 @@ validationDictionary = {
             "1.34",
             "D-TYP PRVKU PROSTOROVÝCH DAT KÓD",
             ["TYPPPD_KOD"],
-            "NUMBER(5.0)",
+            "NUMBER(10.0)",
             UseType(ErrorType.Fatal, ErrorType.Fatal, ErrorType.Fatal, ErrorType.Fatal),
             ValidationRequired(True, True, True, True)
         ),
@@ -428,6 +431,14 @@ validationDictionary = {
             UseType(ErrorType.Critical, ErrorType.Critical, ErrorType.Critical, ErrorType.Critical),
             ValidationRequired(True, True, True, True),
             "JMENO"
+        ),
+        FilledFieldsCheck(
+            "2.7",
+            "Kontrola povinnì vyplnìných sloupcù u parcel",
+            "U parcely musí být povinnì vyplnìn sloupec stav dat (STAV_DAT), typ parcely (PAR_TYPE), šestimístný kód katastrálního území (KATUZE_KOD), druh èíslování parcely (DRUH_CISLOVANI_PAR), kmenové parcelní èíslo (KMENOVE_CISLO_PAR), výmìra parcely (VYMERA_PARCELY), identifikace budovy (IDENT_BUD).",
+            "Parcely nemají vyplnìné všechny povinné sloupce stav dat (STAV_DAT), typ parcely (PAR_TYPE), šestimístný kód katastrálního území ( KATUZE_KOD), druh èíslování parcel (DRUH_CISLOVANI_PAR), kmenové parcelní èíslo (KMENOVE_CISLO_PAR), výmìra parcely (VYMERA_PARCELY), identifikace budovy (IDENT_BUD): „výpis chybných záznamù“. Doplòte chybìjící údaje.",
+            UseType(ErrorType.Critical, ErrorType.Critical, ErrorType.Critical, ErrorType.Critical),
+            ValidationRequired(True, True, True, True)
         )
     ],
     "3. Formální správnost": [],
