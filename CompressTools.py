@@ -1,3 +1,4 @@
+# -*- coding: cp1250 -*-
 #-------------------------------------------------------------------------------
 # Name:        CompressTools
 # Purpose:
@@ -10,12 +11,19 @@
 #-------------------------------------------------------------------------------
 import shutil, os
 
+# @TODO Nastavovat vhodne promìnnou tempDir
+# @TODO Vymazat pøi ukonèení programu promìnnou tempDir
+
+UNCOMPRESSED_EXTENSIONS = ['vfk']
+
 def openFile(fileName):
     """
-    OtevÅ™e soubor fileName vhodnÃ½m kompresnÃ­m programem a vrÃ¡tÃ­ otevÅ™enÃ½ stream.
+    Otevøe soubor fileName vhodným kompresním programem a vrátí otevøený stream.
+
+    @result {Stream | None}
     """
     fileExtension = fileName[fileName.rfind(".") + 1:].lower()
-    if fileExtension == "vfk":
+    if fileExtension in UNCOMPRESSED_EXTENSIONS:
         return open(fileName)
     else:
         formats = shutil.get_archive_formats()

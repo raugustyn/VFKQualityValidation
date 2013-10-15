@@ -16,6 +16,9 @@ class TestGlobalFunctions(unittest.TestCase):
         for fileName in RDB.COMPRESSSAMPLE_DATAFILES:
             r = CT.openFile(fileName)
             self.assertNotEqual(r, None, "Neuspecne dekomprimovany soubor " + fileName)
+            if r != None:
+                lines = r.readlines()
+                print (lines)
         pass
 
 def main():
