@@ -133,7 +133,42 @@ def getListHTML():
 
     return s
 
+def getJson():
+    firstCategory = True
+    s= "["
+    for categoryName in sorted(VFKQualityDictionary.validationDictionary.iterkeys()):
+        words = categoryName.split()
+        temp = words[0].split(".")
+        kod = int(temp[0])
+        if firstCategory:
+            s = s + "{\n\"id\":" + str(kod) + ",\n"
+            firstCategory = False
+        else:
+            s = s + ",{\n\"id\":" + str(kod) + ",\n"
+        s = s + "\"text\":\"" + categoryName + "\",\n"
+        s = s + "\"state\":\"closed\",\n"
+        s = s + "\"checked\":true,\n"
+        s = s + "\"children\":["
+        firstChild = True
+        for validation in VFKQualityDictionary.validationDictionary[categoryName]:
+            if firstChild:
+                firstChild = False
+                s = s + "{\n" + validation.toJson() + "}\n"
+            else:
+                s = s + ",{\n" + validation.toJson() + "}\n"
+        s = s + "]\n}"
+    s = s+ "]"
+    return s
 
+
+##outputDir = "C:\\Program Files\\Apache Software Foundation\\Apache2.2\\QualityCheck\\03_Output\\"
+##saveStrToFile(htmlStart + getListHTML() + htmlEnd, outputDir + "list.html")
+##
+##outputDir = "C:\\Program Files\\Apache Software Foundation\\Apache2.2\\QualityCheck\\03_Output\\"
+##saveStrToFile(htmlStart + getTreeHTML() + htmlEnd, outputDir + "tree.html")
+##
+##outputDir = "C:\\Program Files\\Apache Software Foundation\\Apache2.2\\QualityCheck\\03_Output\\"
+##saveStrToFile(getJson(), outputDir + "tree.json")
 
 outputDir = "..\\03_Output\\"
 saveStrToFile(htmlStart + getListHTML() + htmlEnd, outputDir + "list.html")
@@ -141,3 +176,5 @@ saveStrToFile(htmlStart + getListHTML() + htmlEnd, outputDir + "list.html")
 outputDir = "..\\03_Output\\"
 saveStrToFile(htmlStart + getTreeHTML() + htmlEnd, outputDir + "tree.html")
 
+outputDir = "..\\03_Output\\"
+saveStrToFile(getJson(), outputDir + "tree.json")

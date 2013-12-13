@@ -58,6 +58,16 @@ class VFKValidation:
         """ Vrací formátovaný øádek výstupní tabulky """
         return "<tr><th>" + name + "</th><td>" + str(value) + "</td></tr>\n"
 
+    def toJson(self):
+        """ Konvertuje hodnoty do formátu Json """
+        temp = self.validationNumber.split(".")
+        kod = int(temp[0])*100+int(temp[1])
+        s = "\"id\":" + str(kod) + ",\n"
+        apostrophed = self.getName()
+        unapostrophed = apostrophed.replace('"', '\\"')
+        s = s + "\"text\":" + "\"" + unapostrophed + "\"\n"
+        return s
+
     def toHTML(self):
         """ Konvertuje hodnoty do fornátu HTML """
         s = "<table>\n"
